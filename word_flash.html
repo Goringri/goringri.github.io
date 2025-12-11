@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Flash Word</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-board: #2F4F4F; /* 칠판색 */
+            --frame-wood: #8B4513;
+            --text-chalk: #FFFFFF;
+            --accent-yellow: #FFD700;
+            --accent-blue: #87CEEB;
+            --btn-bg: rgba(255, 255, 255, 0.2);
+            --btn-hover: rgba(255, 255, 255, 0.4);
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Jua', sans-serif;
+            background-color: var(--bg-board);
+            color: var(--text-chalk);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- 1. 설정 화면 (Setup Screen) --- */
+        #setup-screen {
+            background: white;
+            color: #333;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        h1 { margin-top: 0; color: var(--bg-board); font-size: 2.5rem; }
+        
+        .input-area { width: 100%; margin-bottom: 20px; }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-family: 'Noto Sans KR', sans-serif;
+            resize: none;
+        }
+
+        .control-group { margin: 20px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        input[type="range"] { width: 200px; cursor: pointer; }
+
+        .btn-start {
+            background-color: var(--bg-board);
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-start:hover { transform: scale(1.05); background-color: #1a2e2e; }
+
+        /* --- 2. 학습 화면 (Learning Screen) --- */
+        #learning-screen {
+            display: none; /* 초기엔 숨김 */
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 상단 모드 탭 */
+        header {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .mode-btn {
+            background: var(--btn-bg);
+            border: 2px solid transparent;
+            color: #ccc;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            transition: 0.3s;
+        }
+        .mode-btn.active {
+            background: var(--accent-yellow);
+            color: var(--bg-board);
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--accent-yellow);
+        }
+
+        /* 중앙 단어 표시 영역 */
+        #flash-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .guide-text {
+            position: absolute;
+            top: 20px;
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            opacity: 0.8;
+        }
+
+        .word-text {
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        /* 모드별 텍스트 스타일 */
+        .text-en { font-size: 8rem; color: #fff; }
+        .text-ko { font-size: 5rem; color: var(--accent-yellow); margin-top: 20px; }
+        
+        /* 단일 표시 모드일 때 */
+        .text-solo { font-size: 9rem; color: #fff; }
+
+        /* 애니메이션 효과 */
+        .animate-pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 하단 컨트롤 바 */
+        footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .control-btn {
+            background: var(--btn-bg);
+            border: 2px solid white;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .control-btn:hover { background: var(--btn-hover); }
+        .btn-home { font-size: 1rem; border-radius: 15px; width: auto; padding: 0 20px; }
+
+        /* 프로그레스 바 */
+        #progress-bar {
+            position: absolute;
+            bottom: 100px;
+            left: 10%;
+            width: 80%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        #progress-fill {
+            height: 100%;
+            background: var(--accent-yellow);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 3px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <h1>🎓 영어 단어 깜빡이</h1>
+        <div class="input-area">
+            <textarea id="word-input" placeholder="여기에 단어와 뜻을 입력하세요.&#13;&#10;예시:&#13;&#10;apple, 사과&#13;&#10;banana, 바나나&#13;&#10;school, 학교">apple, 사과&#13;&#10;banana, 바나나&#13;&#10;teacher, 선생님&#13;&#10;student, 학생&#13;&#10;friend, 친구&#13;&#10;happy, 행복한&#13;&#10;run, 달리다&#13;&#10;book, 책&#13;&#10;pencil, 연필&#13;&#10;computer, 컴퓨터</textarea>
+        </div>
+        <div class="control-group">
+            <label>넘김 속도: <span id="speed-val">3.0</span>초</label>
+            <input type="range" id="speed-slider" min="1" max="5" step="0.5" value="3" oninput="updateSpeedVal(this.value)">
+        </div>
+        <button class="btn-start" onclick="startLearning()">학습 시작 ▶</button>
+    </div>
+
+    <div id="learning-screen">
+        <header>
+            <button class="mode-btn active" onclick="setMode(1)">1. 단어 학습</button>
+            <button class="mode-btn" onclick="setMode(2)">2. 뜻 말하기</button>
+            <button class="mode-btn" onclick="setMode(3)">3. 영어 말하기</button>
+            <button class="mode-btn" onclick="setMode(4)">4. 랜덤 게임</button>
+        </header>
+
+        <div id="flash-card">
+            <div class="guide-text" id="guide-text"></div>
+            <div id="content-area"></div>
+        </div>
+
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+
+        <footer>
+            <button class="control-btn" onclick="prevCard()">◀</button>
+            <button class="control-btn" id="btn-pause" onclick="togglePlay()">❚❚</button>
+            <button class="control-btn" onclick="nextCard()">▶</button>
+            <button class="control-btn btn-home" onclick="goHome()">🏠 홈으로</button>
+        </footer>
+    </div>
+
+    <script>
+        // --- 변수 설정 ---
+        let words = []; // 단어 리스트 {en: "", ko: ""}
+        let currentIndex = 0;
+        let timer = null;
+        let isPlaying = false;
+        let currentMode = 1; // 1:기본, 2:뜻말하기, 3:영어말하기, 4:랜덤
+        let intervalTime = 3000; // 기본 3초
+
+        // --- 초기 설정 기능 ---
+        function updateSpeedVal(val) {
+            document.getElementById('speed-val').innerText = parseFloat(val).toFixed(1);
+            intervalTime = val * 1000;
+        }
+
+        function startLearning() {
+            const input = document.getElementById('word-input').value;
+            if (!input.trim()) {
+                alert("단어를 입력해주세요!");
+                return;
+            }
+            
+            // 텍스트 파싱 (콤마 또는 탭으로 구분)
+            const lines = input.split('\n');
+            words = [];
+            lines.forEach(line => {
+                if(line.trim().length > 0) {
+                    // 콤마(,) 혹은 슬래시(/) 등으로 구분
+                    let parts = line.split(/,|，|\//); 
+                    if(parts.length >= 2) {
+                        words.push({
+                            en: parts[0].trim(),
+                            ko: parts[1].trim()
+                        });
+                    }
+                }
+            });
+
+            if (words.length === 0) {
+                alert("올바른 형식으로 입력해주세요.\n(예: apple, 사과)");
+                return;
+            }
+
+            // 화면 전환
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('learning-screen').style.display = 'flex';
+            
+            // 초기화 및 시작
+            currentIndex = 0;
+            isPlaying = true;
+            setMode(1); // 기본 모드로 시작
+        }
+
+        function goHome() {
+            stopTimer();
+            document.getElementById('learning-screen').style.display = 'none';
+            document.getElementById('setup-screen').style.display = 'block';
+        }
+
+        // --- 학습 기능 ---
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // 탭 스타일 변경
+            document.querySelectorAll('.mode-btn').forEach((btn, idx) => {
+                if (idx + 1 === mode) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            // 모드별 안내 멘트 및 시간 설정
+            const guide = document.getElementById('guide-text');
+            
+            // 모드 4는 스피드 게임이므로 설정된 시간보다 조금 빠르게 (최소 1초 보장)
+            let tempInterval = intervalTime;
+            
+            if (mode === 1) {
+                guide.innerText = "큰 소리로 따라 읽으세요!";
+            } else if (mode === 2) {
+                guide.innerText = "알맞은 뜻을 말해보세요!";
+            } else if (mode === 3) {
+                guide.innerText = "알맞은 영어를 말해보세요!";
+            } else if (mode === 4) {
+                guide.innerText = "랜덤 스피드 게임!";
+                tempInterval = Math.max(1000, intervalTime * 0.7); // 30% 빠르게
+            }
+
+            // 타이머 재설정
+            if (isPlaying) {
+                stopTimer();
+                startTimer(tempInterval);
+            }
+            
+            showCard();
+        }
+
+        function showCard() {
+            const container = document.getElementById('content-area');
+            const word = words[currentIndex];
+            
+            // 애니메이션 재실행을 위한 리플로우
+            container.classList.remove('animate-pop');
+            void container.offsetWidth; 
+            container.classList.add('animate-pop');
+
+            let html = '';
+
+            if (currentMode === 1) {
+                // 단어 학습 (위: 영어, 아래: 한글)
+                html = `<div class="word-text text-en">${word.en}</div>
+                        <div class="word-text text-ko">${word.ko}</div>`;
+            } else if (currentMode === 2) {
+                // 뜻 말하기 (영어만)
+                html = `<div class="word-text text-solo" style="color:#fff;">${word.en}</div>`;
+            } else if (currentMode === 3) {
+                // 영어 말하기 (한글만)
+                html = `<div class="word-text text-solo" style="color:var(--accent-yellow);">${word.ko}</div>`;
+            } else if (currentMode === 4) {
+                // 랜덤 (50% 확률)
+                if (Math.random() < 0.5) {
+                    html = `<div class="word-text text-solo" style="color:#fff;">${word.en}</div>`;
+                } else {
+                    html = `<div class="word-text text-solo" style="color:var(--accent-yellow);">${word.ko}</div>`;
+                }
+            }
+
+            container.innerHTML = html;
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percent = ((currentIndex + 1) / words.length) * 100;
+            document.getElementById('progress-fill').style.width = percent + '%';
+        }
+
+        // --- 컨트롤러 ---
+        function nextCard() {
+            currentIndex++;
+            if (currentIndex >= words.length) {
+                currentIndex = 0; // 무한 반복
+            }
+            showCard();
+            resetTimer(); // 수동 조작 시 타이머 초기화
+        }
+
+        function prevCard() {
+            currentIndex--;
+            if (currentIndex < 0) {
+                currentIndex = words.length - 1;
+            }
+            showCard();
+            resetTimer();
+        }
+
+        function togglePlay() {
+            const btn = document.getElementById('btn-pause');
+            if (isPlaying) {
+                stopTimer();
+                isPlaying = false;
+                btn.innerText = "▶";
+            } else {
+                let time = currentMode === 4 ? Math.max(1000, intervalTime * 0.7) : intervalTime;
+                startTimer(time);
+                isPlaying = true;
+                btn.innerText = "❚❚";
+            }
+        }
+
+        // --- 타이머 로직 ---
+        function startTimer(ms) {
+            timer = setInterval(() => {
+                nextCard();
+            }, ms);
+        }
+
+        function stopTimer() {
+            clearInterval(timer);
+        }
+
+        function resetTimer() {
+            if (isPlaying) {
+                stopTimer();
+                let time = currentMode === 4 ? Math.max(1000, intervalTime * 0.7) : intervalTime;
+                startTimer(time);
+            }
+        }
+
+    </script>
+</body>
+</html>
