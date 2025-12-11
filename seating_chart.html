@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>학급 자리 배치 프로그램 (그리드형)</title>
+    <title>학급 모둠 자리 배치 프로그램</title>
     <style>
         :root {
             --primary-color: #4a90e2;
             --bg-color: #f0f4f8;
-            --desk-color: #e6b800; 
-            --desk-border: #b38f00;
+            --desk-color: #f7d794; /* 밝은 나무색 */
+            --desk-border: #e1b12c;
+            --group-bg: rgba(255, 255, 255, 0.5);
             --text-color: #333;
-            --assigned-bg: #fff;
-            --assigned-border: #4a90e2;
         }
 
         body {
@@ -28,74 +27,110 @@
         }
 
         .container {
-            width: 90%;
-            max-width: 1200px;
-            margin-top: 20px;
+            width: 95%;
+            max-width: 1400px;
+            margin-top: 10px;
             text-align: center;
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 { margin-bottom: 20px; color: var(--primary-color); }
-        .screen { display: none; }
-        .screen.active { display: block; }
+        h1 { margin: 10px 0 20px 0; color: var(--primary-color); font-size: 1.5rem; }
+        .screen { display: none; height: 100%; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; }
 
-        /* 버튼 스타일 */
+        /* 버튼 */
         button {
             padding: 10px 20px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             background-color: var(--primary-color);
             color: white;
-            transition: background 0.3s;
+            transition: 0.2s;
             margin: 5px;
+            font-weight: bold;
         }
-        button:hover { background-color: #357abd; }
-        button.secondary { background-color: #999; }
+        button:hover { background-color: #357abd; transform: translateY(-2px); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        button.secondary { background-color: #7f8c8d; }
         button.danger { background-color: #e74c3c; }
 
-        /* 입력 및 그리드 스타일 */
+        /* 입력 화면 */
         .input-group { margin: 20px 0; }
-        input[type="number"] { padding: 10px; font-size: 16px; width: 100px; text-align: center; }
+        input[type="number"] { padding: 10px; font-size: 18px; width: 100px; text-align: center; border-radius: 5px; border: 1px solid #ccc; }
 
         .name-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px;
-            margin-bottom: 20px;
-            max-height: 50vh;
+            width: 100%;
             overflow-y: auto;
+            flex: 1;
+            padding: 10px;
         }
         .name-input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
 
-        /* --- 교실 배치 (Grid Layout) --- */
-        #classroom-area {
+        /* --- 3단계: 교실 배치 (핵심) --- */
+        .blackboard {
+            width: 400px;
+            height: 40px;
+            background-color: #2d3436;
+            color: white;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* 교실 전체 영역 (모둠들을 담는 그릇) */
+        #classroom-layout {
             display: grid;
-            /* 6열 고정, 너비는 균등 분할 */
-            grid-template-columns: repeat(6, 1fr);
-            /* 모둠 간격을 위해 gap 설정 (세로 가로 간격) */
-            gap: 15px 10px; 
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto 20px auto;
+            /* 3개의 모둠이 가로로 배치됨 (1분단, 2분단, 3분단 느낌) */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px; /* 모둠(분단) 사이 간격 넓게 */
             padding: 20px;
-            background-color: #eef;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
+            background: #dfe6e9;
+            border-radius: 15px;
+            border: 2px dashed #b2bec3;
+            max-width: 1200px;
+            overflow-y: auto;
         }
 
-        /* 3열과 4열 사이(분단) 간격 벌리기 */
-        #classroom-area > div:nth-child(6n+3) {
-            margin-right: 30px; /* 3열 오른쪽 여백 */
+        /* 개별 모둠 (4인 1조) */
+        .group-container {
+            background-color: var(--group-bg);
+            border: 2px solid rgba(0,0,0,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            display: grid;
+            /* 책상 2열 2행 (2x2=4) */
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 6px; /* 짝꿍끼리 가깝게 */
+            aspect-ratio: 1; /* 정사각형 비율 유지 */
+        }
+        
+        .group-label {
+            grid-column: span 2;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
         }
 
+        /* 책상 스타일 */
         .desk {
-            aspect-ratio: 4 / 3; /* 직사각형 비율 유지 */
             background-color: var(--desk-color);
             border: 2px solid var(--desk-border);
             border-radius: 8px;
@@ -104,99 +139,57 @@
             justify-content: center;
             align-items: center;
             cursor: grab;
-            user-select: none;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.1);
             transition: all 0.2s;
-            font-weight: bold;
-            font-size: 14px;
             position: relative;
+            min-height: 60px;
         }
-
-        .desk:active { cursor: grabbing; }
         
-        /* 드래그 중일 때 스타일 */
-        .desk.dragging {
-            opacity: 0.5;
-            border: 2px dashed #333;
-            transform: scale(0.9);
-        }
+        .desk:active { cursor: grabbing; transform: scale(0.95); }
+        .desk.drag-over { background-color: #ffeaa7; transform: scale(1.05); border: 2px dashed #d35400; }
+        
+        .desk-num { font-size: 10px; color: rgba(0,0,0,0.4); margin-bottom: 2px; }
+        .student-name { font-weight: bold; font-size: 16px; word-break: keep-all; line-height: 1.2; }
 
-        /* 드래그 타겟(도착지) 위일 때 스타일 */
-        .desk.drag-over {
-            background-color: #d1ecf1;
-            border: 2px dashed var(--primary-color);
-            transform: scale(1.05);
-        }
+        /* 배정 애니메이션 */
+        .desk.assigned { background-color: #fff; border-color: var(--primary-color); color: var(--primary-color); }
+        .desk.pop { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        /* 배정된 상태 스타일 */
-        .desk.assigned {
-            background-color: var(--assigned-bg);
-            border: 2px solid var(--assigned-border);
-            color: var(--primary-color);
-        }
-
-        /* 배정 애니메이션 (팝업 효과) */
         @keyframes popIn {
-            0% { transform: scale(0); opacity: 0; }
-            80% { transform: scale(1.1); opacity: 1; }
+            0% { transform: scale(0.5); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        
-        .desk.animate {
-            animation: popIn 0.4s ease-out forwards;
-        }
 
-        .blackboard {
-            width: 300px;
-            height: 30px;
-            background-color: #333;
-            color: white;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        
-        .desk-number {
-            font-size: 10px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .student-name {
-            font-size: 16px;
-        }
+        .controls { margin-top: auto; padding-top: 20px; display: flex; gap: 10px; }
 
     </style>
 </head>
 <body>
 
-    <div id="screen-1" class="container screen active">
-        <h1>🏫 학급 자리 배치 - 설정</h1>
+    <div id="screen-1" class="container screen active" style="justify-content: center;">
+        <h1>🏫 학급 모둠 자리 배치</h1>
         <div class="input-group">
-            <label for="studentCount">학생 수 입력: </label>
-            <input type="number" id="studentCount" min="1" max="50" value="24">
+            <label>학생 수: </label>
+            <input type="number" id="studentCount" min="4" max="48" value="24" step="4">
+            <p style="font-size: 14px; color: #666;">* 4명씩 모둠을 만듭니다 (기본 6모둠)</p>
         </div>
-        <button onclick="goToStep2()">다음 (이름 입력)</button>
+        <button onclick="goToStep2()">다음 단계</button>
     </div>
 
     <div id="screen-2" class="container screen">
-        <h1>📝 학생 이름 입력</h1>
-        <p>기본적으로 랜덤 이름이 생성됩니다. 필요하면 수정하세요.</p>
+        <h1>📝 학생 명단 확인</h1>
         <div id="nameInputsContainer" class="name-grid"></div>
         <div class="controls">
             <button class="secondary" onclick="showScreen('screen-1')">이전</button>
-            <button onclick="goToStep3()">다음 (자리 배치)</button>
+            <button onclick="goToStep3()">자리 배치 하러가기</button>
         </div>
     </div>
 
-    <div id="screen-3" class="container screen" style="max-width: 1400px;">
-        <h1>🪑 자리 배치 및 배정</h1>
-        <div class="blackboard">칠 판 (앞)</div>
+    <div id="screen-3" class="container screen">
+        <h1>🪑 자리 배정</h1>
+        <div class="blackboard">칠 판</div>
         
-        <div id="classroom-area"></div>
+        <div id="classroom-layout"></div>
 
         <div class="controls">
             <button onclick="assignSeatsSequentially()">🎲 순서대로 배정하기</button>
@@ -206,195 +199,183 @@
     </div>
 
     <script>
-        const lastNames = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오', '서', '신', '권', '황', '안', '송', '전', '홍'];
-        const firstNames = ['민준', '서준', '도윤', '예준', '시우', '하준', '지호', '지후', '준우', '준서', '서윤', '서연', '지우', '하윤', '지유', '민서', '채원', '수아', '시아', '다은'];
+        const lastNames = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임', '한', '오'];
+        const firstNames = ['민준', '서준', '도윤', '예준', '시우', '하준', '지호', '지후', '준우', '서윤', '서연', '지우', '하윤', '지유', '민서', '채원'];
 
         let studentCount = 24;
         let studentNames = [];
-        let draggedDesk = null; // 드래그 중인 책상 요소 저장
+        let draggedDesk = null;
 
-        function showScreen(screenId) {
+        function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            document.getElementById(id).classList.add('active');
         }
 
-        function generateRandomName() {
-            const last = lastNames[Math.floor(Math.random() * lastNames.length)];
-            const first = firstNames[Math.floor(Math.random() * firstNames.length)];
-            return last + first;
+        function makeRandomName() {
+            return lastNames[Math.floor(Math.random()*lastNames.length)] + 
+                   firstNames[Math.floor(Math.random()*firstNames.length)];
         }
 
+        // --- STEP 1 -> 2 ---
         function goToStep2() {
-            const countInput = document.getElementById('studentCount');
-            studentCount = parseInt(countInput.value);
-            if (isNaN(studentCount) || studentCount < 1) {
-                alert("올바른 학생 수를 입력해주세요.");
-                return;
-            }
+            const val = parseInt(document.getElementById('studentCount').value);
+            if(val < 4) return alert("최소 4명 이상이어야 합니다.");
+            
+            studentCount = val;
             const container = document.getElementById('nameInputsContainer');
             container.innerHTML = '';
-            for (let i = 0; i < studentCount; i++) {
+
+            for(let i=0; i<studentCount; i++) {
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'name-input';
-                input.value = generateRandomName();
-                input.placeholder = `${i+1}번`;
+                input.value = makeRandomName();
                 container.appendChild(input);
             }
             showScreen('screen-2');
         }
 
+        // --- STEP 2 -> 3 ---
         function goToStep3() {
             const inputs = document.querySelectorAll('.name-input');
-            studentNames = Array.from(inputs).map(input => input.value.trim() || "학생");
-            initClassroom();
+            studentNames = Array.from(inputs).map(inp => inp.value.trim() || '학생');
+            buildClassroom();
             showScreen('screen-3');
         }
 
-        // 교실 그리드 생성
-        function initClassroom() {
-            const classroom = document.getElementById('classroom-area');
-            classroom.innerHTML = ''; 
+        // ★★★ 교실 생성 로직 (모둠 단위) ★★★
+        function buildClassroom() {
+            const layout = document.getElementById('classroom-layout');
+            layout.innerHTML = '';
 
-            // 책상은 기본 24개 생성, 학생이 더 많으면 그만큼 생성
-            const totalDesks = Math.max(24, studentCount);
+            // 필요한 모둠 수 계산 (4명당 1모둠)
+            // 예: 24명이면 6모둠
+            const groupCount = Math.ceil(studentCount / 4);
+            
+            // 전체 책상 수 (모둠 수 * 4) -> 남는 자리는 빈자리 처리
+            const totalDesks = groupCount * 4;
 
-            for (let i = 0; i < totalDesks; i++) {
-                const desk = document.createElement('div');
-                desk.className = 'desk';
-                desk.draggable = true; // 드래그 가능 설정
-                desk.dataset.index = i; // 인덱스 저장
+            let deskGlobalIndex = 0;
+
+            for (let g = 0; g < groupCount; g++) {
+                // 모둠 컨테이너 생성
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
                 
-                // 내부 내용
-                desk.innerHTML = `
-                    <div class="desk-number">${i+1}번</div>
-                    <div class="student-name"></div>
-                `;
+                // 모둠 이름 (선택사항)
+                // const label = document.createElement('div');
+                // label.className = 'group-label';
+                // label.innerText = `${g+1}모둠`;
+                // groupDiv.appendChild(label);
 
-                // 드래그 이벤트 리스너 등록
-                desk.addEventListener('dragstart', handleDragStart);
-                desk.addEventListener('dragover', handleDragOver);
-                desk.addEventListener('dragleave', handleDragLeave);
-                desk.addEventListener('drop', handleDrop);
-                desk.addEventListener('dragend', handleDragEnd);
+                // 모둠 안에 4개의 책상 생성
+                for (let d = 0; d < 4; d++) {
+                    const desk = document.createElement('div');
+                    desk.className = 'desk';
+                    desk.draggable = true;
+                    desk.dataset.index = deskGlobalIndex; // 전체에서의 인덱스
 
-                classroom.appendChild(desk);
+                    desk.innerHTML = `
+                        <div class="desk-num">${deskGlobalIndex + 1}</div>
+                        <div class="student-name"></div>
+                    `;
+
+                    // 드래그 이벤트
+                    desk.addEventListener('dragstart', dragStart);
+                    desk.addEventListener('dragover', dragOver);
+                    desk.addEventListener('drop', dragDrop);
+                    desk.addEventListener('dragenter', dragEnter);
+                    desk.addEventListener('dragleave', dragLeave);
+
+                    groupDiv.appendChild(desk);
+                    deskGlobalIndex++;
+                }
+                layout.appendChild(groupDiv);
             }
         }
 
-        // --- 드래그 앤 드롭 로직 (Grid Swap) ---
-        function handleDragStart(e) {
+        // --- 드래그 앤 드롭 (스왑) ---
+        function dragStart(e) {
             draggedDesk = this;
-            this.classList.add('dragging');
+            this.style.opacity = '0.5';
             e.dataTransfer.effectAllowed = 'move';
         }
-
-        function handleDragOver(e) {
-            e.preventDefault(); // 드롭 허용을 위해 필수
-            if (this === draggedDesk) return;
-            this.classList.add('drag-over');
-            e.dataTransfer.dropEffect = 'move';
-        }
-
-        function handleDragLeave(e) {
-            this.classList.remove('drag-over');
-        }
-
-        function handleDrop(e) {
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+        function dragEnter(e) { if(this !== draggedDesk) this.classList.add('drag-over'); }
+        function dragLeave(e) { this.classList.remove('drag-over'); }
+        function dragDrop(e) {
             e.preventDefault();
             this.classList.remove('drag-over');
+            draggedDesk.style.opacity = '1';
 
             if (this !== draggedDesk) {
-                // 내용 서로 맞바꾸기 (Swap)
-                // 1. 이름 데이터 교환
-                const targetNameDiv = this.querySelector('.student-name');
-                const sourceNameDiv = draggedDesk.querySelector('.student-name');
-                const tempName = targetNameDiv.innerText;
-                targetNameDiv.innerText = sourceNameDiv.innerText;
-                sourceNameDiv.innerText = tempName;
+                // 내용 교환
+                const targetName = this.querySelector('.student-name');
+                const sourceName = draggedDesk.querySelector('.student-name');
+                const temp = targetName.innerText;
+                targetName.innerText = sourceName.innerText;
+                sourceName.innerText = temp;
 
-                // 2. 스타일 상태 교환 (assigned 클래스)
+                // 스타일 교환
                 const targetAssigned = this.classList.contains('assigned');
                 const sourceAssigned = draggedDesk.classList.contains('assigned');
 
-                if (sourceAssigned) this.classList.add('assigned');
-                else this.classList.remove('assigned');
-
-                if (targetAssigned) draggedDesk.classList.add('assigned');
-                else draggedDesk.classList.remove('assigned');
+                if(sourceAssigned) this.classList.add('assigned'); else this.classList.remove('assigned');
+                if(targetAssigned) draggedDesk.classList.add('assigned'); else draggedDesk.classList.remove('assigned');
             }
         }
 
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            document.querySelectorAll('.desk').forEach(desk => desk.classList.remove('drag-over'));
-        }
-
-        // --- 순차 배정 애니메이션 로직 ---
+        // --- 순차 배정 애니메이션 ---
         function assignSeatsSequentially() {
-            if (studentNames.length === 0) return;
-
-            // 1. 이름 섞기
-            let shuffledNames = [...studentNames];
-            for (let i = shuffledNames.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffledNames[i], shuffledNames[j]] = [shuffledNames[j], shuffledNames[i]];
-            }
-
-            // 2. 기존 배치 초기화 (내용만 지움)
-            const allDesks = document.querySelectorAll('.desk');
-            allDesks.forEach(desk => {
-                desk.classList.remove('assigned', 'animate');
-                desk.querySelector('.student-name').innerText = '';
-            });
-
-            // 3. 순차적으로 애니메이션 적용
-            // 버튼 비활성화 (애니메이션 중 중복 클릭 방지)
+            // 버튼 잠금
             const btn = document.querySelector('button[onclick="assignSeatsSequentially()"]');
             btn.disabled = true;
-            btn.innerText = "배정 중...";
 
+            // 1. 이름 섞기
+            let shuffled = [...studentNames];
+            for(let i=shuffled.length-1; i>0; i--) {
+                const j = Math.floor(Math.random()*(i+1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            // 2. 초기화
+            const desks = document.querySelectorAll('.desk');
+            desks.forEach(d => {
+                d.classList.remove('assigned', 'pop');
+                d.querySelector('.student-name').innerText = '';
+            });
+
+            // 3. 하나씩 채우기
             let delay = 0;
-            const delayStep = 150; // 각 자리마다 0.15초 간격
-
-            allDesks.forEach((desk, index) => {
-                if (index < shuffledNames.length) {
+            desks.forEach((desk, idx) => {
+                if (idx < shuffled.length) {
                     setTimeout(() => {
                         const nameDiv = desk.querySelector('.student-name');
-                        nameDiv.innerText = shuffledNames[index];
-                        
-                        desk.classList.add('assigned', 'animate');
-                        
-                        // 효과음 재생 (선택사항, 브라우저 정책상 막힐 수 있어 코드만 포함)
-                        // playSound(); 
+                        nameDiv.innerText = shuffled[idx];
+                        desk.classList.add('assigned', 'pop');
                     }, delay);
-                    delay += delayStep;
+                    delay += 100; // 0.1초 간격
                 }
             });
 
-            // 모든 애니메이션 종료 후 버튼 활성화
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerText = "🎲 순서대로 배정하기";
-            }, delay + 500);
+            // 완료 후 버튼 해제
+            setTimeout(() => { btn.disabled = false; }, delay + 500);
         }
 
         function resetAssignments() {
-            const allDesks = document.querySelectorAll('.desk');
-            allDesks.forEach(desk => {
-                desk.classList.remove('assigned', 'animate');
-                desk.querySelector('.student-name').innerText = '';
+            document.querySelectorAll('.desk').forEach(d => {
+                d.classList.remove('assigned', 'pop');
+                d.querySelector('.student-name').innerText = '';
             });
         }
 
         function goHome() {
-            if(confirm("처음 화면으로 돌아가시겠습니까?")) {
-                studentCount = 24;
-                studentNames = [];
+            if(confirm("초기화면으로 돌아가시겠습니까?")) {
                 document.getElementById('studentCount').value = 24;
                 showScreen('screen-1');
             }
         }
+
     </script>
 </body>
 </html>
