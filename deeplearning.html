@@ -3,459 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>미래 의료 AI 연구소: 세포 분석 훈련</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>AI 동물 학교: 멍냥이 분류 교실</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Jua&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --panel-bg: rgba(30, 41, 59, 0.7);
-            --border: rgba(56, 189, 248, 0.3);
-            --primary: #38bdf8; /* Blue (Normal) */
-            --danger: #ef4444;  /* Red (Virus) */
-            --accent: #22d3ee;  /* Neon Cyan */
-            --text-main: #f1f5f9;
-            --text-sub: #94a3b8;
+            --bg-color: #FFF4E0;
+            --panel-bg: #ffffff;
+            --primary: #FFB84C;  /* 멍멍이 색 (주황) */
+            --secondary: #A5D7E8; /* 냥이 색 (하늘) */
+            --accent: #FF6969;   /* 포인트 (분홍) */
+            --text-main: #594545;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; user-select: none; }
 
         body {
             margin: 0;
             padding: 0;
             width: 100vw;
             height: 100vh;
-            background-color: var(--bg-dark);
+            background-color: var(--bg-color);
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 1) 100%),
-                linear-gradient(rgba(30, 41, 59, 0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(30, 41, 59, 0.5) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            color: var(--text-main);
-            font-family: 'Noto Sans KR', sans-serif;
+                radial-gradient(#FFE6BC 20%, transparent 20%), 
+                radial-gradient(#FFE6BC 20%, transparent 20%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
             display: flex;
             justify-content: center;
             align-items: center;
+            font-family: 'Jua', sans-serif;
             overflow: hidden;
         }
 
         /* 16:9 비율 유지 컨테이너 */
-        #dashboard {
+        #game-frame {
             width: 95vw;
-            max-width: 1600px;
+            max-width: 1400px;
             aspect-ratio: 16 / 9;
             background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            box-shadow: 0 0 50px rgba(56, 189, 248, 0.1);
-            display: grid;
-            grid-template-rows: 70px 1fr 100px; /* 헤더, 메인, 푸터 */
-            padding: 20px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(89, 69, 69, 0.15);
+            border: 8px solid #FFF;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             position: relative;
-            backdrop-filter: blur(10px);
         }
 
-        /* --- 1. 헤더 --- */
+        /* --- 1. 상단 헤더 --- */
         header {
+            height: 80px;
+            background: #FFEDD5;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
+            padding: 0 40px;
+            font-size: 1.8rem;
+            color: var(--text-main);
         }
-        .logo { font-family: 'Orbitron'; font-size: 1.8rem; color: var(--accent); display: flex; align-items: center; gap: 10px; }
-        .stats { display: flex; gap: 30px; font-family: 'Orbitron'; font-size: 1.2rem; }
-        .stat-item span { color: var(--primary); font-weight: bold; }
-        .level-badge { background: var(--accent); color: #000; padding: 5px 15px; border-radius: 4px; font-weight: bold; font-size: 1rem; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 2.2rem; }
+        .score-board { 
+            background: #fff; padding: 10px 30px; border-radius: 30px; 
+            box-shadow: 0 5px 0 rgba(0,0,0,0.05);
+            font-size: 1.5rem;
+        }
+        .level-badge {
+            background: var(--accent); color: white; padding: 5px 20px; 
+            border-radius: 20px; font-size: 1.2rem; margin-left: 10px;
+        }
 
-        /* --- 2. 메인 영역 (3단 분할) --- */
+        /* --- 2. 메인 게임 영역 --- */
         main {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr 1fr; /* 현미경 - AI분석 - 데이터로그 */
-            gap: 20px;
-            padding: 20px 0;
-            overflow: hidden;
+            flex: 1;
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+            background: linear-gradient(to bottom, #fff, #f9f9f9);
         }
 
-        /* 패널 공통 스타일 */
-        .panel {
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
+        /* [왼쪽] 동물 등장 구역 */
+        .monitor-section {
+            flex: 1;
+            background: #E8F3D6;
+            border-radius: 30px;
+            border: 5px solid #fff;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            position: relative;
-        }
-        .panel-title { font-family: 'Orbitron'; color: var(--text-sub); margin-bottom: 15px; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-
-        /* [왼쪽] 현미경 뷰 */
-        .microscope-view {
-            flex: 1;
-            background: #000;
-            border-radius: 50%; /* 원형 뷰 */
-            border: 4px solid #334155;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
             align-items: center;
-            box-shadow: inset 0 0 50px #000;
-            margin: auto;
-            width: 300px; height: 300px;
-        }
-        .crosshair {
-            position: absolute; width: 100%; height: 100%;
-            background: 
-                linear-gradient(#0f0 1px, transparent 1px) center/20px 100% no-repeat,
-                linear-gradient(90deg, #0f0 1px, transparent 1px) center/100% 20px no-repeat;
-            opacity: 0.3; pointer-events: none;
-        }
-        
-        /* 세포 스타일 (CSS로 그림) */
-        .cell {
-            width: 120px; height: 120px;
-            transition: all 0.5s;
+            justify-content: center;
             position: relative;
-            display: flex; justify-content: center; align-items: center;
         }
-        .cell-core { width: 40px; height: 40px; border-radius: 50%; filter: blur(2px); }
+        .camera-label {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(0,0,0,0.1); padding: 5px 15px; border-radius: 15px;
+            color: #555; font-size: 1.2rem;
+        }
         
-        /* 정상 세포: 둥글고 파란색, 느린 움직임 */
-        .cell.normal {
-            background: rgba(56, 189, 248, 0.3);
-            border-radius: 50%;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 20px var(--primary);
-            animation: float 4s infinite ease-in-out;
+        #animal-display {
+            font-size: 10rem;
+            filter: drop-shadow(0 10px 0 rgba(0,0,0,0.1));
+            transition: transform 0.3s;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .cell.normal .cell-core { background: #bae6fd; }
 
-        /* 바이러스: 뾰족하고 빨간색, 떨림 */
-        .cell.virus {
-            background: rgba(239, 68, 68, 0.3);
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            border: none;
-            animation: shake 0.2s infinite;
+        /* [가운데] AI 로봇 & 분석 */
+        .ai-section {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
         }
-        .cell.virus .cell-core { background: #fca5a5; width: 30px; height: 30px; }
 
-        /* [중앙] AI 분석 센터 */
-        .analysis-screen {
-            display: flex; flex-direction: column; gap: 10px;
+        /* 로봇 캐릭터 */
+        .robot-wrapper {
+            position: relative;
+            width: 150px; height: 150px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 6rem;
+            animation: float 3s infinite ease-in-out;
+        }
+        .robot-thought {
+            position: absolute; top: -60px; right: -80px;
+            background: #fff; padding: 15px 25px; border-radius: 20px;
+            border: 3px solid var(--text-main);
+            font-size: 1.3rem; white-space: nowrap;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.1);
+        }
+        .robot-thought::after {
+            content: ''; position: absolute; bottom: -10px; left: 20px;
+            border-width: 10px 10px 0; border-style: solid;
+            border-color: var(--text-main) transparent; display: block; width: 0;
+        }
+
+        /* 특징 분석 패널 */
+        .analysis-panel {
+            width: 100%;
+            background: #fff;
+            border-radius: 25px;
+            padding: 20px;
+            border: 3px solid #eee;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
         .feature-row {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px; font-size: 1.4rem; color: #777;
+            padding: 8px 15px; border-radius: 15px; background: #fafafa;
         }
-        .feature-name { color: var(--text-sub); font-size: 0.9rem; }
-        .feature-val { font-family: 'Orbitron'; color: var(--accent); }
-        
-        .ai-prediction {
-            margin-top: auto;
-            text-align: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 10px;
-            border: 1px solid var(--accent);
+        .feature-row.active {
+            background: #FFF8E1; color: var(--text-main); font-weight: bold;
+            transform: scale(1.02); transition: 0.3s;
+            border: 2px solid var(--primary);
         }
-        .confidence-bar {
-            width: 100%; height: 10px; background: #333; margin: 10px 0; border-radius: 5px; overflow: hidden;
-        }
-        .confidence-fill {
-            height: 100%; width: 0%; transition: width 1s;
+        .check-icon { opacity: 0; transition: 0.3s; }
+        .active .check-icon { opacity: 1; color: #2ecc71; }
+
+        /* [오른쪽] 정답 선택 구역 */
+        .control-section {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
         }
 
-        /* [오른쪽] 데이터 로그 */
-        .log-list {
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            overflow-y: auto;
-            height: 100%;
-            display: flex; flex-direction: column; gap: 5px;
-        }
-        .log-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
-
-        /* --- 3. 푸터 (컨트롤) --- */
-        footer {
-            display: flex; justify-content: center; gap: 20px; align-items: center;
-        }
-        .btn {
-            background: transparent;
-            border: 2px solid;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-family: 'Orbitron';
-            color: white;
+        .btn-choice {
+            flex: 1;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Jua', sans-serif;
+            font-size: 2rem;
             cursor: pointer;
-            border-radius: 5px;
             transition: all 0.2s;
-            text-transform: uppercase;
-            width: 250px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: 0 10px 0 rgba(0,0,0,0.1);
+            color: white;
+            opacity: 0.7; pointer-events: none; /* AI 생각 중엔 비활성 */
         }
-        .btn-normal { border-color: var(--primary); color: var(--primary); }
-        .btn-normal:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
+        .btn-choice.active { opacity: 1; pointer-events: auto; transform: translateY(-5px); }
+        .btn-choice:active { transform: translateY(5px); box-shadow: none; }
+
+        .btn-dog { background: var(--primary); }
+        .btn-cat { background: var(--secondary); }
         
-        .btn-virus { border-color: var(--danger); color: var(--danger); }
-        .btn-virus:hover { background: var(--danger); color: #000; box-shadow: 0 0 20px var(--danger); }
+        .btn-icon { font-size: 3rem; margin-bottom: 10px; }
 
-        /* 애니메이션 정의 */
-        @keyframes float { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(5px, -10px); } }
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-1px, -2px) rotate(-1deg); } 40% { transform: translate(-3px, 0px) rotate(1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
-
-        /* 모달 오버레이 */
+        /* --- 오버레이 (시작/종료 화면) --- */
         .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255, 255, 255, 0.95);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100;
+            z-index: 100; text-align: center;
         }
-        .overlay h1 { font-family: 'Orbitron'; font-size: 3rem; color: var(--accent); margin-bottom: 20px; text-shadow: 0 0 20px var(--accent); }
-        .overlay p { max-width: 600px; text-align: center; line-height: 1.6; margin-bottom: 40px; color: #cbd5e1; }
+        .overlay h1 { font-size: 4rem; color: var(--text-main); margin-bottom: 10px; }
+        .overlay p { font-size: 1.8rem; color: #888; margin-bottom: 40px; }
         .start-btn {
-            background: var(--accent); border: none; padding: 15px 50px; font-size: 1.5rem; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 30px var(--accent); transition: transform 0.2s;
+            background: var(--accent); color: white; font-size: 2rem; padding: 15px 60px;
+            border: none; border-radius: 50px; cursor: pointer; font-family: 'Jua';
+            box-shadow: 0 10px 0 #D44D4D; transition: 0.2s;
         }
-        .start-btn:hover { transform: scale(1.1); }
+        .start-btn:hover { transform: scale(1.05); }
+
+        /* 애니메이션 */
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
 
     </style>
 </head>
 <body>
 
-<div id="dashboard">
+<div id="game-frame">
     <header>
-        <div class="logo">
-            <span style="font-size: 2rem;">🧬</span> MEDI-AI LAB
-            <span class="level-badge">LV.<span id="level">1</span></span>
-        </div>
-        <div class="stats">
-            <div class="stat-item">ACCURACY: <span id="accuracy">0</span>%</div>
-            <div class="stat-item" style="margin-left:20px;">DATASETS: <span id="score">0</span></div>
+        <div class="logo">🏫 AI 동물 학교</div>
+        <div>
+            <span class="score-board">학습 데이터: <span id="score" style="color:var(--accent)">0</span>장</span>
+            <span class="level-badge">Lv.<span id="level">1</span> 아기 로봇</span>
         </div>
     </header>
 
     <main>
-        <div class="panel">
-            <div class="panel-title">MICROSCOPE FEED [LIVE]</div>
-            <div class="microscope-view">
-                <div class="crosshair"></div>
-                <div id="cell-container">
-                    </div>
-            </div>
-            <div style="margin-top:10px; font-size:0.8rem; text-align:center; color:#64748b;">
-                배율: x4000 | 필터: UV
-            </div>
+        <div class="monitor-section">
+            <div class="camera-label">📷 실시간 카메라</div>
+            <div id="animal-display">🐶</div>
         </div>
 
-        <div class="panel">
-            <div class="panel-title">AI FEATURE EXTRACTION</div>
-            <div class="analysis-screen">
-                <div class="feature-row">
-                    <span class="feature-name">표면 형태 (Surface)</span>
-                    <span class="feature-val" id="feat-shape">ANALYZING...</span>
-                </div>
-                <div class="feature-row">
-                    <span class="feature-name">세포질 색상 (Color)</span>
-                    <span class="feature-val" id="feat-color">ANALYZING...</span>
-                </div>
-                <div class="feature-row">
-                    <span class="feature-name">운동성 (Motility)</span>
-                    <span class="feature-val" id="feat-move">ANALYZING...</span>
-                </div>
+        <div class="ai-section">
+            <div class="robot-wrapper">
+                <div id="robot-face">🤖</div>
+                <div class="robot-thought" id="robot-msg">어떤 동물이지?</div>
+            </div>
 
-                <div class="ai-prediction">
-                    <div style="font-size: 0.9rem; color:#94a3b8;">AI PREDICTION MODEL</div>
-                    <div id="ai-result-text" style="font-size: 1.5rem; font-weight:bold; margin: 10px 0;">Wait...</div>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" id="conf-bar-fill"></div>
-                    </div>
-                    <div style="font-size: 0.8rem;">신뢰도: <span id="conf-val">0</span>%</div>
+            <div class="analysis-panel">
+                <div style="font-size:1.5rem; margin-bottom:15px; color:#555;">🔍 특징 분석 (Feature Extraction)</div>
+                
+                <div class="feature-row" id="feat-ears">
+                    <span>👂 귀 모양</span>
+                    <span class="check-icon" id="res-ears">?</span>
+                </div>
+                <div class="feature-row" id="feat-sound">
+                    <span>🎤 울음 소리</span>
+                    <span class="check-icon" id="res-sound">?</span>
+                </div>
+                <div class="feature-row" id="feat-tail">
+                    <span>🧣 털/꼬리</span>
+                    <span class="check-icon" id="res-tail">?</span>
                 </div>
             </div>
         </div>
 
-        <div class="panel">
-            <div class="panel-title">SYSTEM LOG</div>
-            <div class="log-list" id="log-console">
-                <div class="log-item">> System initialized...</div>
-                <div class="log-item">> Waiting for input stream...</div>
-            </div>
+        <div class="control-section">
+            <button class="btn-choice btn-dog" id="btn-dog" onclick="teachAI('dog')">
+                <div class="btn-icon">🐶</div>
+                강아지야!
+            </button>
+            <button class="btn-choice btn-cat" id="btn-cat" onclick="teachAI('cat')">
+                <div class="btn-icon">🐱</div>
+                고양이야!
+            </button>
         </div>
     </main>
 
-    <footer>
-        <button class="btn btn-normal" onclick="playerDecision('normal')">✅ 정상 세포</button>
-        <button class="btn btn-virus" onclick="playerDecision('virus')">⚠️ 바이러스 감염</button>
-    </footer>
-
-    <div class="overlay" id="start-overlay">
-        <h1>세포 분석 챌린지</h1>
+    <div class="overlay" id="start-screen">
+        <h1>🐶 AI 동물 학교 🐱</h1>
         <p>
-            당신은 의료 AI 연구원입니다.<br>
-            현미경으로 보이는 세포의 <b>[모양, 색깔, 움직임]</b>을 분석하여<br>
-            AI에게 <b>정상</b>인지 <b>바이러스</b>인지 가르쳐주세요(Labeling).<br><br>
-            데이터가 쌓일수록 AI의 진단 정확도가 올라갑니다!
+            아기 로봇이 동물들을 구별할 수 있게<br>
+            선생님이 되어 정답을 알려주세요!
         </p>
-        <button class="start-btn" onclick="startGame()">연구 시작</button>
+        <button class="start-btn" onclick="gameStart()">수업 시작하기</button>
     </div>
 </div>
 
 <script>
-    /* --- 게임 데이터 및 변수 --- */
+    // --- 게임 데이터 ---
+    const animals = {
+        dog: [
+            { icon: '🐶', ears: '접힌 귀/작은 귀', sound: '멍멍!', tail: '살랑살랑' },
+            { icon: '🐕', ears: '쫑긋한 귀', sound: '왈왈!', tail: '흔들흔들' },
+            { icon: '🐩', ears: '곱슬곱슬 귀', sound: '컹컹!', tail: '복슬복슬' }
+        ],
+        cat: [
+            { icon: '🐱', ears: '뾰족한 세모 귀', sound: '야옹~', tail: '살금살금' },
+            { icon: '🐈', ears: '쫑긋한 세모 귀', sound: '냐앙~', tail: '우아하게' },
+            { icon: '😽', ears: '접힌 귀(폴드)', sound: '그르릉...', tail: '얌전하게' }
+        ]
+    };
+
+    let score = 0;
     let level = 1;
-    let score = 0; // 학습시킨 데이터 수
-    let correctCount = 0; // 맞춘 횟수
-    let currentCellType = ''; // 'normal' or 'virus'
-    
-    // AI 상태 (초기엔 멍청함)
-    let aiAccuracy = 50; // 초기 AI 정확도 50%
-    
-    // 시나리오 데이터
-    // Normal: 둥근 모양, 파란색/청록색, 느림
-    // Virus: 뾰족/불규칙, 빨간색/보라색, 빠름/떨림
-    
-    function startGame() {
-        document.getElementById('start-overlay').style.display = 'none';
-        addLog("Training Session Started.");
-        spawnCell();
+    let currentType = ''; 
+    let currentData = null;
+
+    function gameStart() {
+        document.getElementById('start-screen').style.display = 'none';
+        nextProblem();
     }
 
-    function spawnCell() {
-        const container = document.getElementById('cell-container');
-        container.innerHTML = ''; // 초기화
+    function nextProblem() {
+        // 1. 초기화
+        resetUI();
 
-        // 1. 세포 타입 결정 (50:50)
-        currentCellType = Math.random() < 0.5 ? 'normal' : 'virus';
+        // 2. 랜덤 동물 선택
+        currentType = Math.random() < 0.5 ? 'dog' : 'cat';
+        const list = animals[currentType];
+        currentData = list[Math.floor(Math.random() * list.length)];
 
-        // 2. 시각적 생성
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.classList.add(currentCellType);
+        // 3. 동물 등장
+        document.getElementById('animal-display').innerText = currentData.icon;
         
-        const core = document.createElement('div');
-        core.classList.add('cell-core');
-        cell.appendChild(core);
-        
-        container.appendChild(cell);
-
-        // 3. AI 분석 시뮬레이션 (특징 추출)
-        simulateAIAnalysis(currentCellType);
+        // 4. AI 분석 애니메이션 시작 (1.5초 동안 생각)
+        simulateAnalysis();
     }
 
-    function simulateAIAnalysis(type) {
-        // UI 초기화
-        document.getElementById('feat-shape').innerText = "SCANNING...";
-        document.getElementById('feat-color').innerText = "SCANNING...";
-        document.getElementById('feat-move').innerText = "SCANNING...";
-        document.getElementById('ai-result-text').innerText = "ANALYZING...";
-        document.getElementById('conf-bar-fill').style.width = '0%';
+    function resetUI() {
+        document.getElementById('robot-face').innerText = "🤖";
+        document.getElementById('robot-msg').innerText = "음... 특징을 살펴볼까?";
         
+        // 분석창 초기화
+        ['ears', 'sound', 'tail'].forEach(f => {
+            const row = document.getElementById('feat-'+f);
+            row.classList.remove('active');
+            document.getElementById('res-'+f).innerText = "?";
+        });
+
+        // 버튼 비활성화
+        document.getElementById('btn-dog').classList.remove('active');
+        document.getElementById('btn-cat').classList.remove('active');
+    }
+
+    function simulateAnalysis() {
+        // 0.5초마다 하나씩 특징 발견 연출
+        setTimeout(() => showFeature('ears', currentData.ears), 500);
+        setTimeout(() => showFeature('sound', currentData.sound), 1000);
+        setTimeout(() => showFeature('tail', currentData.tail), 1500);
+
+        // 분석 완료 후 버튼 활성화
         setTimeout(() => {
-            // 특징 추출 결과 표시
-            if (type === 'normal') {
-                document.getElementById('feat-shape').innerText = "ROUND (원형)";
-                document.getElementById('feat-shape').style.color = "#38bdf8";
-                document.getElementById('feat-color').innerText = "BLUE/CYAN";
-                document.getElementById('feat-move').innerText = "STABLE (안정)";
-            } else {
-                document.getElementById('feat-shape').innerText = "IRREGULAR (불규칙)";
-                document.getElementById('feat-shape').style.color = "#ef4444";
-                document.getElementById('feat-color').innerText = "RED/PURPLE";
-                document.getElementById('feat-move').innerText = "UNSTABLE (불안정)";
-            }
-            
-            // AI 예측 (현재 AI 정확도에 따라 정답 혹은 오답 예측)
-            // Math.random() * 100 이 aiAccuracy보다 낮으면 정답을 맞힘.
-            const isAiCorrect = (Math.random() * 100) < aiAccuracy;
-            
-            let aiGuess = '';
-            let confidence = 0;
-
-            if (isAiCorrect) {
-                aiGuess = type === 'normal' ? 'NORMAL CELL' : 'VIRUS DETECTED';
-                confidence = Math.floor(Math.random() * 20) + 80; // 80~99% 확신
-            } else {
-                // 틀린 예측
-                aiGuess = type === 'normal' ? 'VIRUS DETECTED' : 'NORMAL CELL';
-                confidence = Math.floor(Math.random() * 30) + 40; // 40~69% (애매함)
-            }
-
-            // 결과 출력
-            const resText = document.getElementById('ai-result-text');
-            resText.innerText = aiGuess;
-            resText.style.color = aiGuess.includes('VIRUS') ? 'var(--danger)' : 'var(--primary)';
-            
-            document.getElementById('conf-val').innerText = confidence;
-            const bar = document.getElementById('conf-bar-fill');
-            bar.style.width = confidence + '%';
-            bar.style.background = confidence > 80 ? 'var(--accent)' : '#fbbf24'; // 높으면 청록, 낮으면 노랑
-
-            addLog(`> AI Prediction: ${aiGuess} (${confidence}%)`);
-
-        }, 800); // 0.8초 딜레이
+            document.getElementById('robot-face').innerText = "💡";
+            document.getElementById('robot-msg').innerText = "알았다! 정답을 알려줘!";
+            document.getElementById('btn-dog').classList.add('active');
+            document.getElementById('btn-cat').classList.add('active');
+        }, 2000);
     }
 
-    function playerDecision(choice) {
-        // choice: 'normal' or 'virus'
-        // currentCellType: 'normal' or 'virus'
-        
-        let msg = "";
-        
-        if (choice === currentCellType) {
-            // 정답 (라벨링 성공)
+    function showFeature(id, text) {
+        const row = document.getElementById('feat-' + id);
+        row.classList.add('active');
+        const res = document.getElementById('res-' + id);
+        res.innerText = text; // 특징 텍스트 표시
+    }
+
+    function teachAI(userChoice) {
+        // 버튼이 활성화되지 않았으면 클릭 무시
+        if (!document.getElementById('btn-' + userChoice).classList.contains('active')) return;
+
+        if (userChoice === currentType) {
+            // 정답
             score++;
-            correctCount++;
-            msg = "CORRECT LABELING. DATABASE UPDATED.";
-            addLog(`> [SUCCESS] ${msg}`);
+            document.getElementById('score').innerText = score;
             
-            // AI 정확도 상승 (최대 98%까지)
-            if(aiAccuracy < 98) aiAccuracy += 2;
+            // 로봇 반응
+            document.getElementById('robot-face').innerText = "🥰";
+            document.getElementById('robot-msg').innerText = "고마워! 배웠어! (데이터 저장)";
+            
+            // 레벨업 체크
+            checkLevelUp();
 
         } else {
             // 오답
-            msg = "INCORRECT LABELING. REVIEW DATA.";
-            addLog(`> [ERROR] ${msg}`, true);
-            
-            // 패널티 (정확도 소폭 하락)
-            if(aiAccuracy > 30) aiAccuracy -= 5;
+            document.getElementById('robot-face').innerText = "😵‍💫";
+            document.getElementById('robot-msg').innerText = "으앙! 헷갈려! (오류 발생)";
         }
 
-        updateDashboard();
-        spawnCell(); // 다음 문제
+        // 다음 문제로
+        setTimeout(nextProblem, 1500);
     }
 
-    function updateDashboard() {
-        // 점수 갱신
-        document.getElementById('score').innerText = score;
-        
-        // 전체 정확도 계산 (플레이어의 정확도)
-        const totalAcc = score === 0 ? 0 : Math.round((correctCount / (score + (score-correctCount))) * 100); 
-        // 여기서는 간단히 'AI 성능'을 표시하는 것으로 연출
-        document.getElementById('accuracy').innerText = Math.floor(aiAccuracy);
-
-        // 레벨업 로직
-        if (score > level * 10) {
-            level++;
-            document.getElementById('level').innerText = level;
-            addLog(`>> SYSTEM UPGRADE: LEVEL ${level}`);
-            alert(`🎉 레벨 업! AI 성능이 향상되었습니다. (Lv.${level})`);
+    function checkLevelUp() {
+        if (score === 5) {
+            level = 2;
+            document.getElementById('robot-face').innerText = "🚀";
+            alert("축하합니다! 로봇이 [어린이 로봇]으로 진화했습니다!");
+        } else if (score === 10) {
+            level = 3;
+            document.getElementById('robot-face').innerText = "🎓";
+            alert("대단해요! 로봇이 [박사 로봇]으로 진화했습니다!");
         }
+        document.getElementById('level').innerText = level;
     }
 
-    function addLog(text, isError = false) {
-        const consoleEl = document.getElementById('log-console');
-        const div = document.createElement('div');
-        div.classList.add('log-item');
-        div.innerText = text;
-        if (isError) div.style.color = '#ef4444';
-        
-        consoleEl.prepend(div); // 최신 로그가 위로
-        
-        // 로그 갯수 제한
-        if (consoleEl.children.length > 20) {
-            consoleEl.removeChild(consoleEl.lastChild);
-        }
-    }
 </script>
 
 </body>
