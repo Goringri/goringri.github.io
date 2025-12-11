@@ -70,6 +70,7 @@
         .level-badge {
             background: var(--accent); color: white; padding: 5px 20px; 
             border-radius: 20px; font-size: 1.2rem; margin-left: 10px;
+            display: flex; align-items: center; gap: 5px;
         }
 
         /* --- 2. 메인 게임 영역 --- */
@@ -219,7 +220,9 @@
         <div class="logo">🏫 AI 동물 학교</div>
         <div>
             <span class="score-board">학습 데이터: <span id="score" style="color:var(--accent)">0</span>장</span>
-            <span class="level-badge">Lv.<span id="level">1</span> 아기 로봇</span>
+            <span class="level-badge">
+                Lv.<span id="level">1</span> <span id="robot-rank">아기 로봇</span>
+            </span>
         </div>
     </header>
 
@@ -317,7 +320,7 @@
     }
 
     function resetUI() {
-        document.getElementById('robot-face').innerText = "🤖";
+        document.getElementById('robot-face').innerText = getRobotFaceByLevel(); // 레벨에 맞는 얼굴 유지
         document.getElementById('robot-msg').innerText = "음... 특징을 살펴볼까?";
         
         // 분석창 초기화
@@ -330,6 +333,12 @@
         // 버튼 비활성화
         document.getElementById('btn-dog').classList.remove('active');
         document.getElementById('btn-cat').classList.remove('active');
+    }
+
+    function getRobotFaceByLevel() {
+        if(level === 3) return "🎓";
+        if(level === 2) return "🚀";
+        return "🤖";
     }
 
     function simulateAnalysis() {
@@ -380,14 +389,17 @@
         setTimeout(nextProblem, 1500);
     }
 
+    // ★★★ 수정된 레벨업 로직 ★★★
     function checkLevelUp() {
         if (score === 5) {
             level = 2;
             document.getElementById('robot-face').innerText = "🚀";
+            document.getElementById('robot-rank').innerText = "어린이 로봇"; // 이름 변경
             alert("축하합니다! 로봇이 [어린이 로봇]으로 진화했습니다!");
         } else if (score === 10) {
             level = 3;
             document.getElementById('robot-face').innerText = "🎓";
+            document.getElementById('robot-rank').innerText = "박사 로봇"; // 이름 변경
             alert("대단해요! 로봇이 [박사 로봇]으로 진화했습니다!");
         }
         document.getElementById('level').innerText = level;
