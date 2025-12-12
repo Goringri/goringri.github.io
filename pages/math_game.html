@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>감성 수학: 소수의 나눗셈</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Nanum+Pen+Script&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Noto+Sans+KR:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Shared overrides */
+        body {
+            /* Reset body to allow scrolling if needed or keep fixed */
+            overflow: hidden;
+            /* Game usually needs fixed viewport */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Specific Game Styles */
+        :root {
+            /* Keep game specific vars or map to global? Keeping specific for now for game logic/visuals */
+            --primary: #9b59b6;
+            --accent: #e17055;
+            --text: #2d3436;
+        }
+
+        /* Override generic container for game frame */
+        #app-frame {
+            width: 90vw;
+            max-width: 1100px;
+            aspect-ratio: 16 / 9;
+            background: rgba(255, 255, 255, 0.85);
+            /* Keep the lighter bg for readability */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            margin-top: 60px;
+            /* Space for Nav */
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Rest of the game specific styles */
+        .screen {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease-out;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Nanum Pen Script', cursive;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-family: 'Nanum Pen Script', cursive;
+            font-size: 4.5rem;
+            margin: 0 0 10px 0;
+            color: var(--text);
+            font-weight: normal;
+            text-shadow: none;
+            background: none;
+            -webkit-text-fill-color: initial;
+        }
+
+        h2 {
+            font-family: 'Nanum Pen Script', cursive;
+            font-size: 3rem;
+            color: var(--text);
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        p.desc {
+            font-size: 2rem;
+            color: #636e72;
+            margin-top: 0;
+            font-family: 'Nanum Pen Script', cursive;
+        }
+
+        /* Buttons */
+        button {
+            font-family: 'Nanum Pen Script', cursive;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            font-size: 1.8rem;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            padding: 10px 40px;
+            font-size: 2rem;
+        }
+
+        .btn-sub {
+            background: white;
+            color: var(--text);
+            padding: 10px 25px;
+            border: 2px solid transparent;
+        }
+
+        .btn-sub:hover {
+            border-color: var(--primary);
+        }
+
+        .btn-icon-game {
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+            border: none;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .diff-card {
+            width: 180px;
+            height: 240px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .diff-card:hover {
+            transform: translateY(-10px);
+            background: white;
+            border-color: var(--primary);
+        }
+
+        .diff-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+
+        .diff-name {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-family: 'Nanum Pen Script', cursive;
+        }
+
+        .diff-info {
+            font-size: 1rem;
+            color: #888;
+            font-family: 'Nanum Gothic', sans-serif;
+        }
+
+        .game-header {
+            width: 100%;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .status-badge {
+            background: white;
+            padding: 8px 30px;
+            border-radius: 30px;
+            font-size: 1.8rem;
+            display: flex;
+            gap: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            color: var(--text);
+            font-family: 'Nanum Gothic', sans-serif;
+        }
+
+        .game-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .problem-display {
+            font-family: 'Nanum Gothic', sans-serif;
+            font-size: 6rem;
+            color: var(--text);
+            font-weight: bold;
+            text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.5);
+            padding: 20px 60px;
+            border-radius: 40px;
+            text-align: center;
+        }
+
+        .game-footer {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        input[type="number"] {
+            font-family: 'Nanum Gothic', sans-serif;
+            width: 180px;
+            padding: 10px;
+            font-size: 2.2rem;
+            border: 3px solid white;
+            border-radius: 20px;
+            text-align: center;
+            outline: none;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+            font-weight: bold;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-check {
+            background: var(--primary);
+            color: white;
+            padding: 10px 30px;
+            font-size: 1.8rem;
+        }
+
+        .btn-pass {
+            background: #b2bec3;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1.6rem;
+        }
+
+        #feedback-toast {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-family: 'Nanum Gothic', sans-serif;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .result-container {
+            display: flex;
+            gap: 30px;
+            width: 90%;
+            height: 80%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .score-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-section {
+            flex: 1;
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-family: 'Nanum Gothic', sans-serif;
+        }
+
+        th {
+            color: #888;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 1rem;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #f9f9f9;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        .rank-top {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        #rank-form {
+            background: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px dashed var(--accent);
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: popUp 0.3s;
+        }
+
+        @keyframes popUp {
+            from {
+                transform: scale(0.8);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass-nav">
+        <a href="../index.html" class="nav-logo">JINMAN'S CLASS</a>
+        <div class="nav-links">
+            <a href="math_game.html" class="active">소수의 나눗셈</a>
+            <a href="deeplearning.html">딥러닝 게임</a>
+            <a href="seating_chart.html">자리 배치</a>
+            <a href="word_flash.html">단어 깜빡이</a>
+        </div>
+    </nav>
+
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Main Game Frame -->
+    <div id="app-frame">
+
+        <div id="screen-main" class="screen active">
+            <h1>소수의 나눗셈</h1>
+            <p class="desc">자신의 수학 실력을 확인해보세요.</p>
+
+            <div style="margin-top: 50px; display: flex; gap: 20px;">
+                <button class="btn-main" onclick="showScreen('screen-diff')">게임 시작</button>
+                <button class="btn-sub" onclick="openRankingFromMain()">🏆 명예의 전당</button>
+            </div>
+        </div>
+
+        <div id="screen-diff" class="screen">
+            <h2>난이도 선택</h2>
+
+            <div class="card-container">
+                <div class="diff-card" onclick="startGame('easy')">
+                    <div class="diff-icon">🐥</div>
+                    <div class="diff-name">초급</div>
+                    <div class="diff-info">소수 ÷ 자연수</div>
+                </div>
+                <div class="diff-card" onclick="startGame('medium')">
+                    <div class="diff-icon">🦁</div>
+                    <div class="diff-name">중급</div>
+                    <div class="diff-info">소수 ÷ 소수</div>
+                </div>
+                <div class="diff-card" onclick="startGame('hard')">
+                    <div class="diff-icon">🐲</div>
+                    <div class="diff-name">고급</div>
+                    <div class="diff-info">복잡한 계산</div>
+                </div>
+            </div>
+
+            <button class="btn-sub" onclick="showScreen('screen-main')">메인으로</button>
+        </div>
+
+        <div id="screen-game" class="screen" style="padding: 20px;">
+            <div class="game-header">
+                <button class="btn-icon-game" onclick="askExit()" title="홈으로">🏠</button>
+
+                <div class="status-badge number-font">
+                    <span>⏳ <span id="timer" style="color:var(--accent)">60</span></span>
+                    <span style="border-left: 2px solid #eee; margin: 0 5px;"></span>
+                    <span>⭐ <span id="score">0</span></span>
+                </div>
+            </div>
+
+            <div class="game-content">
+                <div id="feedback-toast">정답입니다! 👏</div>
+                <div class="problem-display" id="problem-text">3.6 ÷ 0.6</div>
+            </div>
+
+            <div class="game-footer">
+                <input type="number" id="answer-input" placeholder="?" step="0.01">
+                <button class="btn-check" onclick="checkAnswer()">확인</button>
+                <button class="btn-pass" onclick="passProblem()">패스</button>
+            </div>
+        </div>
+
+        <div id="screen-result" class="screen">
+            <div class="result-container">
+                <div class="score-section">
+                    <h2>게임 종료</h2>
+                    <div style="font-size: 1.5rem; color: #666;">최종 점수</div>
+                    <div style="font-size: 5rem; color: var(--primary); margin-bottom: 20px;" class="number-font"
+                        id="final-score">0</div>
+
+                    <div id="rank-form" style="display:none;">
+                        <p style="margin:0 0 10px 0; color:var(--accent); font-size:1.5rem;">순위권 진입! 이름을 남기세요</p>
+                        <input type="text" id="player-name" placeholder="이름"
+                            style="width:120px; padding:8px; font-size:1.2rem; border-radius:10px; border:1px solid #ddd;">
+                        <button onclick="saveRank()"
+                            style="background:var(--primary); color:white; padding:8px 15px; border-radius:10px; font-size:1.2rem;">저장</button>
+                    </div>
+
+                    <div style="margin-top: 30px; display:flex; gap:10px;">
+                        <button class="btn-main" onclick="showScreen('screen-diff')">다시 하기</button>
+                        <button class="btn-sub" onclick="showScreen('screen-main')">홈으로</button>
+                    </div>
+                </div>
+
+                <div class="rank-section">
+                    <h3 style="margin:0 0 15px 0; text-align:center;">🏆 <span id="rank-title-diff"></span> 명예의 전당</h3>
+                    <div style="overflow-y:auto; flex:1;">
+                        <table id="result-rank-table">
+                            <thead>
+                                <tr>
+                                    <th>순위</th>
+                                    <th>이름</th>
+                                    <th>점수</th>
+                                </tr>
+                            </thead>
+                            <tbody id="result-rank-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-rank" class="screen">
+            <h2>🏆 명예의 전당</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn-sub" id="tab-easy" onclick="loadRankings('easy', 'main-rank-tbody')">초급</button>
+                <button class="btn-sub" id="tab-medium" onclick="loadRankings('medium', 'main-rank-tbody')">중급</button>
+                <button class="btn-sub" id="tab-hard" onclick="loadRankings('hard', 'main-rank-tbody')">고급</button>
+            </div>
+
+            <div
+                style="width: 70%; background: white; border-radius: 20px; padding: 20px; height: 50%; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>이름</th>
+                            <th>점수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="main-rank-tbody"></tbody>
+                </table>
+            </div>
+
+            <button class="btn-sub" style="margin-top: 20px;" onclick="showScreen('screen-main')">돌아가기</button>
+        </div>
+
+        <div id="modal-exit" class="modal-overlay">
+            <div class="modal-box">
+                <h3 style="margin-top:0;">홈으로 갈까요?</h3>
+                <p style="color:#666; font-size:1.2rem;">진행 중인 내용은 저장되지 않아요.</p>
+                <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+                    <button class="btn-sub" onclick="closeModal(false)">취소</button>
+                    <button class="btn-main" style="background:var(--accent); font-size:1.5rem;"
+                        onclick="closeModal(true)">나가기</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 전역 변수 ---
+        let score = 0;
+        let time = 60;
+        let timerInterval = null;
+        let currentDiff = 'easy';
+        let answer = 0;
+        let gameActive = false;
+
+        const settings = {
+            easy: { s: 10, label: '초급' },
+            medium: { s: 20, label: '중급' },
+            hard: { s: 30, label: '고급' }
+        };
+
+        // --- 화면 이동 ---
+        function showScreen(id) {
+            clearInterval(timerInterval);
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // --- 랭킹 화면 진입 ---
+        function openRankingFromMain() {
+            showScreen('screen-rank');
+            loadRankings('easy', 'main-rank-tbody');
+        }
+
+        // --- 모달 로직 ---
+        function askExit() {
+            document.getElementById('modal-exit').style.display = 'flex';
+        }
+        function closeModal(confirm) {
+            document.getElementById('modal-exit').style.display = 'none';
+            if (confirm) showScreen('screen-main');
+        }
+
+        // --- 게임 시작 ---
+        function startGame(diff) {
+            currentDiff = diff;
+            score = 0;
+            time = 60;
+            gameActive = true;
+
+            document.getElementById('score').innerText = score;
+            document.getElementById('timer').innerText = time;
+            document.getElementById('answer-input').value = '';
+
+            showScreen('screen-game');
+            nextProblem();
+
+            timerInterval = setInterval(() => {
+                time--;
+                document.getElementById('timer').innerText = time;
+                if (time <= 0) finishGame();
+            }, 1000);
+
+            setTimeout(() => document.getElementById('answer-input').focus(), 300);
+        }
+
+        // --- 문제 생성 (소수의 나눗셈) ---
+        function nextProblem() {
+            let a, b, res;
+
+            if (currentDiff === 'easy') {
+                // 초급: 소수 한 자리 ÷ 자연수
+                b = Math.floor(Math.random() * 8) + 2;
+                res = (Math.floor(Math.random() * 89) + 11) / 10;
+            } else if (currentDiff === 'medium') {
+                // 중급: 소수 ÷ 소수 (몫이 자연수)
+                b = (Math.floor(Math.random() * 8) + 2) / 10;
+                res = Math.floor(Math.random() * 19) + 2;
+            } else {
+                // 고급: 소수 ÷ 소수 (몫이 소수)
+                b = (Math.floor(Math.random() * 8) + 2) / 10;
+                res = (Math.floor(Math.random() * 190) + 11) / 10;
+            }
+
+            a = parseFloat((b * res).toFixed(2));
+            answer = res;
+
+            document.getElementById('problem-text').innerText = `${a} ÷ ${b}`;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+
+        // --- 정답 확인 ---
+        function checkAnswer() {
+            if (!gameActive) return;
+            const inputVal = parseFloat(document.getElementById('answer-input').value);
+
+            if (inputVal === answer) {
+                score += settings[currentDiff].s;
+                document.getElementById('score').innerText = score;
+                showToast("정답입니다! 👏", true);
+                nextProblem();
+            } else {
+                showToast("다시 풀어보세요 😅", false);
+                document.getElementById('answer-input').value = '';
+                document.getElementById('answer-input').focus();
+            }
+        }
+
+        function passProblem() {
+            if (!gameActive) return;
+            showToast("다음 문제! 👉", false);
+            nextProblem();
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // --- 피드백 토스트 ---
+        function showToast(msg, isGood) {
+            const toast = document.getElementById('feedback-toast');
+            toast.innerText = msg;
+            toast.style.background = isGood ? 'var(--primary)' : '#b2bec3';
+            toast.style.opacity = 1;
+            toast.style.top = '-60px';
+
+            setTimeout(() => {
+                toast.style.opacity = 0;
+                toast.style.top = '-50px';
+            }, 800);
+        }
+
+        // --- 게임 종료 ---
+        function finishGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            showScreen('screen-result');
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('rank-title-diff').innerText = settings[currentDiff].label;
+
+            // 즉시 순위표 로드
+            loadRankings(currentDiff, 'result-rank-tbody');
+
+            // 순위권 확인
+            const ranks = getRanks(currentDiff);
+            const rankForm = document.getElementById('rank-form');
+
+            // 5위 안에 들거나 기록이 5개 미만일 때 (0점 제외)
+            if (score > 0 && (ranks.length < 5 || score > ranks[ranks.length - 1].score)) {
+                rankForm.style.display = 'block';
+                document.getElementById('player-name').value = '';
+            } else {
+                rankForm.style.display = 'none';
+            }
+        }
+
+        // --- 랭킹 시스템 ---
+        function getRanks(diff) {
+            return JSON.parse(localStorage.getItem('mathRank_' + diff) || '[]');
+        }
+
+        function saveRank() {
+            const name = document.getElementById('player-name').value.trim();
+            if (!name) return alert('이름을 입력해주세요!');
+
+            const ranks = getRanks(currentDiff);
+            ranks.push({ name, score });
+            ranks.sort((a, b) => b.score - a.score); // 내림차순
+
+            localStorage.setItem('mathRank_' + currentDiff, JSON.stringify(ranks.slice(0, 5)));
+            document.getElementById('rank-form').style.display = 'none';
+
+            // 저장 후 바로 갱신된 순위표 보여주기
+            loadRankings(currentDiff, 'result-rank-tbody');
+            alert('순위가 저장되었습니다!');
+        }
+
+        function loadRankings(diff, targetTbodyId) {
+            // 메인 화면 탭 스타일 처리 (있는 경우만)
+            if (targetTbodyId === 'main-rank-tbody') {
+                ['easy', 'medium', 'hard'].forEach(d => {
+                    const btn = document.getElementById('tab-' + d);
+                    if (d === diff) {
+                        btn.style.background = 'var(--primary)';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.style.background = 'white';
+                        btn.style.color = 'var(--text)';
+                    }
+                });
+            }
+
+            const ranks = getRanks(diff);
+            const tbody = document.getElementById(targetTbodyId);
+            tbody.innerHTML = '';
+
+            if (ranks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="color:#aaa; padding:20px;">기록이 없습니다</td></tr>`;
+            } else {
+                ranks.forEach((r, i) => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="${i < 3 ? 'rank-top' : ''}">${i + 1}</td>
+                        <td style="font-weight:bold;">${r.name}</td>
+                        <td>${r.score}</td>
+                    </tr>
+                `;
+                });
+            }
+        }
+    </script>
+
+</body>
+
+</html>
+
+<script>
+    // --- 전역 변수 ---
+    let score = 0;
+    let time = 60;
+    let timerInterval = null;
+    let currentDiff = 'easy';
+    let answer = 0;
+    let gameActive = false;
+
+    const settings = {
+        easy: { s: 10, label: '초급' },
+        medium: { s: 20, label: '중급' },
+        hard: { s: 30, label: '고급' }
+    };
+
+    // --- 화면 이동 ---
+    function showScreen(id) {
+        clearInterval(timerInterval);
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // --- 랭킹 화면 진입 ---
+    function openRankingFromMain() {
+        showScreen('screen-rank');
+        loadRankings('easy', 'main-rank-tbody');
+    }
+
+    // --- 모달 로직 ---
+    function askExit() {
+        document.getElementById('modal-exit').style.display = 'flex';
+    }
+    function closeModal(confirm) {
+        document.getElementById('modal-exit').style.display = 'none';
+        if (confirm) showScreen('screen-main');
+    }
+
+    // --- 게임 시작 ---
+    function startGame(diff) {
+        currentDiff = diff;
+        score = 0;
+        time = 60;
+        gameActive = true;
+
+        document.getElementById('score').innerText = score;
+        document.getElementById('timer').innerText = time;
+        document.getElementById('answer-input').value = '';
+
+        showScreen('screen-game');
+        nextProblem();
+
+        timerInterval = setInterval(() => {
+            time--;
+            document.getElementById('timer').innerText = time;
+            if (time <= 0) finishGame();
+        }, 1000);
+
+        setTimeout(() => document.getElementById('answer-input').focus(), 300);
+    }
+
+    // --- 문제 생성 (소수의 나눗셈) ---
+    function nextProblem() {
+        let a, b, res;
+
+        if (currentDiff === 'easy') {
+            // 초급: 소수 한 자리 ÷ 자연수
+            b = Math.floor(Math.random() * 8) + 2;
+            res = (Math.floor(Math.random() * 89) + 11) / 10;
+        } else if (currentDiff === 'medium') {
+            // 중급: 소수 ÷ 소수 (몫이 자연수)
+            b = (Math.floor(Math.random() * 8) + 2) / 10;
+            res = Math.floor(Math.random() * 19) + 2;
+        } else {
+            // 고급: 소수 ÷ 소수 (몫이 소수)
+            b = (Math.floor(Math.random() * 8) + 2) / 10;
+            res = (Math.floor(Math.random() * 190) + 11) / 10;
+        }
+
+        a = parseFloat((b * res).toFixed(2));
+        answer = res;
+
+        document.getElementById('problem-text').innerText = `${a} ÷ ${b}`;
+        document.getElementById('answer-input').value = '';
+        document.getElementById('answer-input').focus();
+    }
+
+    // --- 정답 확인 ---
+    function checkAnswer() {
+        if (!gameActive) return;
+        const inputVal = parseFloat(document.getElementById('answer-input').value);
+
+        if (inputVal === answer) {
+            score += settings[currentDiff].s;
+            document.getElementById('score').innerText = score;
+            showToast("정답입니다! 👏", true);
+            nextProblem();
+        } else {
+            showToast("다시 풀어보세요 😅", false);
+            document.getElementById('answer-input').value = '';
+            document.getElementById('answer-input').focus();
+        }
+    }
+
+    function passProblem() {
+        if (!gameActive) return;
+        showToast("다음 문제! 👉", false);
+        nextProblem();
+    }
+
+    document.getElementById('answer-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAnswer();
+    });
+
+    // --- 피드백 토스트 ---
+    function showToast(msg, isGood) {
+        const toast = document.getElementById('feedback-toast');
+        toast.innerText = msg;
+        toast.style.background = isGood ? 'var(--primary)' : '#b2bec3';
+        toast.style.opacity = 1;
+        toast.style.top = '-60px';
+
+        setTimeout(() => {
+            toast.style.opacity = 0;
+            toast.style.top = '-50px';
+        }, 800);
+    }
+
+    // --- 게임 종료 ---
+    function finishGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+        showScreen('screen-result');
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('rank-title-diff').innerText = settings[currentDiff].label;
+
+        // 즉시 순위표 로드
+        loadRankings(currentDiff, 'result-rank-tbody');
+
+        // 순위권 확인
+        const ranks = getRanks(currentDiff);
+        const rankForm = document.getElementById('rank-form');
+
+        // 5위 안에 들거나 기록이 5개 미만일 때 (0점 제외)
+        if (score > 0 && (ranks.length < 5 || score > ranks[ranks.length - 1].score)) {
+            rankForm.style.display = 'block';
+            document.getElementById('player-name').value = '';
+        } else {
+            rankForm.style.display = 'none';
+        }
+    }
+
+    // --- 랭킹 시스템 ---
+    function getRanks(diff) {
+        return JSON.parse(localStorage.getItem('mathRank_' + diff) || '[]');
+    }
+
+    function saveRank() {
+        const name = document.getElementById('player-name').value.trim();
+        if (!name) return alert('이름을 입력해주세요!');
+
+        const ranks = getRanks(currentDiff);
+        ranks.push({ name, score });
+        ranks.sort((a, b) => b.score - a.score); // 내림차순
+
+        localStorage.setItem('mathRank_' + currentDiff, JSON.stringify(ranks.slice(0, 5)));
+        document.getElementById('rank-form').style.display = 'none';
+
+        // 저장 후 바로 갱신된 순위표 보여주기
+        loadRankings(currentDiff, 'result-rank-tbody');
+        alert('순위가 저장되었습니다!');
+    }
+
+    function loadRankings(diff, targetTbodyId) {
+        // 메인 화면 탭 스타일 처리 (있는 경우만)
+        if (targetTbodyId === 'main-rank-tbody') {
+            ['easy', 'medium', 'hard'].forEach(d => {
+                const btn = document.getElementById('tab-' + d);
+                if (d === diff) {
+                    btn.style.background = 'var(--primary)';
+                    btn.style.color = 'white';
+                } else {
+                    btn.style.background = 'white';
+                    btn.style.color = 'var(--text)';
+                }
+            });
+        }
+
+        const ranks = getRanks(diff);
+        const tbody = document.getElementById(targetTbodyId);
+        tbody.innerHTML = '';
+
+        if (ranks.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="color:#aaa; padding:20px;">기록이 없습니다</td></tr>`;
+        } else {
+            ranks.forEach((r, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="${i < 3 ? 'rank-top' : ''}">${i + 1}</td>
+                        <td style="font-weight:bold;">${r.name}</td>
+                        <td>${r.score}</td>
+                    </tr>
+                `;
+            });
+        }
+    }
+</script>
+
+</body>
+
+</html>

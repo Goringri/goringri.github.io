@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 동물 학교: 멍냥이 분류 교실</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@300;400;700&family=Jua&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Noto+Sans+KR:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        :root {
+            /* Game specific variables */
+            --bg-color: #FFF4E0;
+            --panel-bg: #ffffff;
+            --primary: #FFB84C;
+            /* 멍멍이 색 (주황) */
+            --secondary: #A5D7E8;
+            /* 냥이 색 (하늘) */
+            --accent: #FF6969;
+            /* 포인트 (분홍) */
+            --text-main: #594545;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            /* Override to allow liquid bg */
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            /* Remove specific background to use liquid bg */
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Jua', sans-serif;
+            overflow: hidden;
+        }
+
+        /* 16:9 비율 유지 컨테이너 - Adjusted to fit with Nav */
+        #game-frame {
+            width: 95vw;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            background: var(--panel-bg);
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 8px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            margin-top: 60px;
+            /* Space for Nav */
+        }
+
+        /* --- 1. 상단 헤더 --- */
+        header {
+            height: 80px;
+            background: #FFEDD5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 2.2rem;
+        }
+
+        .score-board {
+            background: #fff;
+            padding: 10px 30px;
+            border-radius: 30px;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.05);
+            font-size: 1.5rem;
+        }
+
+        .level-badge {
+            background: var(--accent);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- 2. 메인 게임 영역 --- */
+        main {
+            flex: 1;
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+            background: linear-gradient(to bottom, #fff, #f9f9f9);
+        }
+
+        /* [왼쪽] 동물 등장 구역 */
+        .monitor-section {
+            flex: 1;
+            background: #E8F3D6;
+            border-radius: 30px;
+            border: 5px solid #fff;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .camera-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 5px 15px;
+            border-radius: 15px;
+            color: #555;
+            font-size: 1.2rem;
+        }
+
+        #animal-display {
+            font-size: 10rem;
+            filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* [가운데] AI 로봇 & 분석 */
+        .ai-section {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* 로봇 캐릭터 */
+        .robot-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 6rem;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .robot-thought {
+            position: absolute;
+            top: -60px;
+            right: -80px;
+            background: #fff;
+            color: var(--text-main);
+            /* Fix invisible text */
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 3px solid var(--text-main);
+            font-size: 1.3rem;
+            white-space: nowrap;
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .robot-thought::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: var(--text-main) transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* 특징 분석 패널 */
+        .analysis-panel {
+            width: 100%;
+            background: #fff;
+            border-radius: 25px;
+            padding: 20px;
+            border: 3px solid #eee;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 1.4rem;
+            color: #777;
+            padding: 8px 15px;
+            border-radius: 15px;
+            background: #fafafa;
+        }
+
+        .feature-row.active {
+            background: #FFF8E1;
+            color: var(--text-main);
+            font-weight: bold;
+            transform: scale(1.02);
+            transition: 0.3s;
+            border: 2px solid var(--primary);
+        }
+
+        .check-icon {
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .active .check-icon {
+            opacity: 1;
+            color: #2ecc71;
+        }
+
+        /* [오른쪽] 정답 선택 구역 */
+        .control-section {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-choice {
+            flex: 1;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Jua', sans-serif;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 0 rgba(0, 0, 0, 0.1);
+            color: white;
+            opacity: 0.7;
+            pointer-events: none;
+            /* AI 생각 중엔 비활성 */
+        }
+
+        .btn-choice.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(-5px);
+        }
+
+        .btn-choice:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        .btn-dog {
+            background: var(--primary);
+        }
+
+        .btn-cat {
+            background: var(--secondary);
+        }
+
+        .btn-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* --- 오버레이 (시작/종료 화면) --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .overlay h1 {
+            font-size: 4rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            background: none;
+            -webkit-background-clip: border-box;
+            background-clip: border-box;
+            -webkit-text-fill-color: var(--text-main);
+        }
+
+        .overlay p {
+            font-size: 1.8rem;
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            background: var(--accent);
+            color: white;
+            font-size: 2rem;
+            padding: 15px 60px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Jua';
+            box-shadow: 0 10px 0 #D44D4D;
+            transition: 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* 애니메이션 */
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="glass-nav">
+        <a href="../index.html" class="nav-logo">JINMAN'S CLASS</a>
+        <div class="nav-links">
+            <a href="math_game.html">소수의 나눗셈</a>
+            <a href="deeplearning.html" class="active">딥러닝 게임</a>
+            <a href="seating_chart.html">자리 배치</a>
+            <a href="word_flash.html">단어 깜빡이</a>
+        </div>
+    </nav>
+
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div id="game-frame">
+        <header>
+            <div class="logo">🏫 AI 동물 학교</div>
+            <div>
+                <span class="score-board">학습 데이터: <span id="score" style="color:var(--accent)">0</span>장</span>
+                <span class="level-badge">
+                    Lv.<span id="level">1</span> <span id="robot-rank">아기 로봇</span>
+                </span>
+            </div>
+        </header>
+
+        <main>
+            <div class="monitor-section">
+                <div class="camera-label">📷 실시간 카메라</div>
+                <div id="animal-display">🐶</div>
+            </div>
+
+            <div class="ai-section">
+                <div class="robot-wrapper">
+                    <div id="robot-face">🤖</div>
+                    <div class="robot-thought" id="robot-msg">어떤 동물이지?</div>
+                </div>
+
+                <div class="analysis-panel">
+                    <div style="font-size:1.5rem; margin-bottom:15px; color:#555;">🔍 특징 분석 (Feature Extraction)</div>
+
+                    <div class="feature-row" id="feat-ears">
+                        <span>👂 귀 모양</span>
+                        <span class="check-icon" id="res-ears">?</span>
+                    </div>
+                    <div class="feature-row" id="feat-sound">
+                        <span>🎤 울음 소리</span>
+                        <span class="check-icon" id="res-sound">?</span>
+                    </div>
+                    <div class="feature-row" id="feat-tail">
+                        <span>🧣 털/꼬리</span>
+                        <span class="check-icon" id="res-tail">?</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <button class="btn-choice btn-dog" id="btn-dog" onclick="teachAI('dog')">
+                    <div class="btn-icon">🐶</div>
+                    강아지야!
+                </button>
+                <button class="btn-choice btn-cat" id="btn-cat" onclick="teachAI('cat')">
+                    <div class="btn-icon">🐱</div>
+                    고양이야!
+                </button>
+            </div>
+        </main>
+
+        <div class="overlay" id="start-screen">
+            <h1>🐶 AI 동물 학교 🐱</h1>
+            <p>
+                아기 로봇이 동물들을 구별할 수 있게<br>
+                선생님이 되어 정답을 알려주세요!
+            </p>
+            <button class="start-btn" onclick="gameStart()">수업 시작하기</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 게임 데이터 ---
+        const animals = {
+            dog: [
+                { icon: '🐶', ears: '접힌 귀/작은 귀', sound: '멍멍!', tail: '살랑살랑' },
+                { icon: '🐕', ears: '쫑긋한 귀', sound: '왈왈!', tail: '흔들흔들' },
+                { icon: '🐩', ears: '곱슬곱슬 귀', sound: '컹컹!', tail: '복슬복슬' }
+            ],
+            cat: [
+                { icon: '🐱', ears: '뾰족한 세모 귀', sound: '야옹~', tail: '살금살금' },
+                { icon: '🐈', ears: '쫑긋한 세모 귀', sound: '냐앙~', tail: '우아하게' },
+                { icon: '😽', ears: '접힌 귀(폴드)', sound: '그르릉...', tail: '얌전하게' }
+            ]
+        };
+
+        let score = 0;
+        let level = 1;
+        let currentType = '';
+        let currentData = null;
+
+        function gameStart() {
+            document.getElementById('start-screen').style.display = 'none';
+            nextProblem();
+        }
+
+        function nextProblem() {
+            // 1. 초기화
+            resetUI();
+
+            // 2. 랜덤 동물 선택
+            currentType = Math.random() < 0.5 ? 'dog' : 'cat';
+            const list = animals[currentType];
+            currentData = list[Math.floor(Math.random() * list.length)];
+
+            // 3. 동물 등장
+            document.getElementById('animal-display').innerText = currentData.icon;
+
+            // 4. AI 분석 애니메이션 시작 (1.5초 동안 생각)
+            simulateAnalysis();
+        }
+
+        function resetUI() {
+            document.getElementById('robot-face').innerText = getRobotFaceByLevel(); // 레벨에 맞는 얼굴 유지
+            document.getElementById('robot-msg').innerText = "음... 특징을 살펴볼까?";
+
+            // 분석창 초기화
+            ['ears', 'sound', 'tail'].forEach(f => {
+                const row = document.getElementById('feat-' + f);
+                row.classList.remove('active');
+                document.getElementById('res-' + f).innerText = "?";
+            });
+
+            // 버튼 비활성화
+            document.getElementById('btn-dog').classList.remove('active');
+            document.getElementById('btn-cat').classList.remove('active');
+        }
+
+        function getRobotFaceByLevel() {
+            if (level === 3) return "🎓";
+            if (level === 2) return "🚀";
+            return "🤖";
+        }
+
+        function simulateAnalysis() {
+            // 0.5초마다 하나씩 특징 발견 연출
+            setTimeout(() => showFeature('ears', currentData.ears), 500);
+            setTimeout(() => showFeature('sound', currentData.sound), 1000);
+            setTimeout(() => showFeature('tail', currentData.tail), 1500);
+
+            // 분석 완료 후 버튼 활성화
+            setTimeout(() => {
+                document.getElementById('robot-face').innerText = "💡";
+                document.getElementById('robot-msg').innerText = "알았다! 정답을 알려줘!";
+                document.getElementById('btn-dog').classList.add('active');
+                document.getElementById('btn-cat').classList.add('active');
+            }, 2000);
+        }
+
+        function showFeature(id, text) {
+            const row = document.getElementById('feat-' + id);
+            row.classList.add('active');
+            const res = document.getElementById('res-' + id);
+            res.innerText = text; // 특징 텍스트 표시
+        }
+
+        function teachAI(userChoice) {
+            // 버튼이 활성화되지 않았으면 클릭 무시
+            if (!document.getElementById('btn-' + userChoice).classList.contains('active')) return;
+
+            if (userChoice === currentType) {
+                // 정답
+                score++;
+                document.getElementById('score').innerText = score;
+
+                // 로봇 반응
+                document.getElementById('robot-face').innerText = "🥰";
+                document.getElementById('robot-msg').innerText = "고마워! 배웠어! (데이터 저장)";
+
+                // 레벨업 체크
+                checkLevelUp();
+
+            } else {
+                // 오답
+                document.getElementById('robot-face').innerText = "😵‍💫";
+                document.getElementById('robot-msg').innerText = "으앙! 헷갈려! (오류 발생)";
+            }
+
+            // 다음 문제로
+            setTimeout(nextProblem, 1500);
+        }
+
+        // ★★★ 수정된 레벨업 로직 ★★★
+        function checkLevelUp() {
+            if (score === 5) {
+                level = 2;
+                document.getElementById('robot-face').innerText = "🚀";
+                document.getElementById('robot-rank').innerText = "어린이 로봇"; // 이름 변경
+                alert("축하합니다! 로봇이 [어린이 로봇]으로 진화했습니다!");
+            } else if (score === 10) {
+                level = 3;
+                document.getElementById('robot-face').innerText = "🎓";
+                document.getElementById('robot-rank').innerText = "박사 로봇"; // 이름 변경
+                alert("대단해요! 로봇이 [박사 로봇]으로 진화했습니다!");
+            }
+            document.getElementById('level').innerText = level;
+        }
+
+    </script>
+
+</body>
+
+</html>
